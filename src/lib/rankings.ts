@@ -23,6 +23,7 @@ export type CollageGame = {
 
 export type UserListItem = PublicUser & {
   gameCount: number;
+  likeCount: number;
   games: CollageGame[];
 };
 
@@ -61,6 +62,7 @@ export async function listUsers(): Promise<UserListItem[]> {
   const { rows } = await pool.query(
     `SELECT u.id, u.name, u.username, u."displayUsername", u.image,
        (SELECT COUNT(*) FROM ranking r WHERE r.user_id = u.id)::int AS "gameCount",
+       (SELECT COUNT(*) FROM ranking_like l WHERE l.liked_user_id = u.id)::int AS "likeCount",
        (SELECT COALESCE(
           json_agg(json_build_object('name', g.name, 'coverImageId', g.cover_image_id)
                    ORDER BY r.position),
@@ -73,19 +75,35 @@ export async function listUsers(): Promise<UserListItem[]> {
   return rows as UserListItem[];
 }
 
-export async function getCommunityTop(limit = 10): Promise<CommunityGame[]> {
-  const { rows } = await pool.query(
-    `SELECT g.id, g.name, g.cover_image_id AS "coverImageId",
+// Without a limit, returns every game that appears in at least one ranking
+export async function getCommunityTop(limit?: number): Promise<CommunityGame[]> {
+  const sql = `SELECT g.id, g.name, g.cover_image_id AS "coverImageId",
             g.release_year AS "releaseYear",
             SUM(11 - r.position)::int AS points,
             COUNT(*)::int AS "listCount"
      FROM ranking r JOIN game g ON g.id = r.game_id
      GROUP BY g.id
-     ORDER BY points DESC, "listCount" DESC, g.name ASC
-     LIMIT $1`,
-    [limit]
-  );
+     ORDER BY points DESC, "listCount" DESC, g.name ASC`;
+  const { rows } =
+    limit !== undefined
+      ? await pool.query(`${sql} LIMIT $1`, [limit])
+      : await pool.query(sql);
   return rows as CommunityGame[];
+}
+
+export type LikeInfo = { count: number; likedByViewer: boolean };
+
+export async function getLikeInfo(
+  profileUserId: string,
+  viewerId?: string
+): Promise<LikeInfo> {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS count,
+            COALESCE(BOOL_OR(user_id = $2), false) AS "likedByViewer"
+     FROM ranking_like WHERE liked_user_id = $1`,
+    [profileUserId, viewerId ?? ""]
+  );
+  return rows[0] as LikeInfo;
 }
 
 export type Comparison = {

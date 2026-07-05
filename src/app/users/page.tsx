@@ -37,6 +37,8 @@ export default async function UsersPage() {
                     {user.gameCount > 0
                       ? `${user.gameCount} ranked`
                       : "No list yet"}
+                    {user.likeCount > 0 &&
+                      `, ${user.likeCount} ${user.likeCount === 1 ? "like" : "likes"}`}
                   </p>
                 </div>
               </Link>

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { getRankingForUser, getUserByUsername } from "@/lib/rankings";
+import { getLikeInfo, getRankingForUser, getUserByUsername } from "@/lib/rankings";
 import GameCover from "@/components/GameCover";
+import LikeButton from "@/components/LikeButton";
 
 export default async function ProfilePage({
   params,
@@ -20,8 +21,12 @@ export default async function ProfilePage({
   )?.username;
   const isOwner = session?.user.id === user.id;
 
-  const ranking = await getRankingForUser(user.id);
+  const [ranking, likeInfo] = await Promise.all([
+    getRankingForUser(user.id),
+    getLikeInfo(user.id, session?.user.id),
+  ]);
   const displayName = user.displayUsername ?? user.username ?? user.name;
+  const likeMode = isOwner ? "own" : session ? "toggle" : "signed-out";
 
   return (
     <div>
@@ -34,7 +39,13 @@ export default async function ProfilePage({
               : "No ranking yet"}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          <LikeButton
+            likedUserId={user.id}
+            initialCount={likeInfo.count}
+            initialLiked={likeInfo.likedByViewer}
+            mode={likeMode}
+          />
           {isOwner && (
             <Link
               href="/rank"

@@ -52,9 +52,14 @@ export default async function HomePage() {
       </section>
 
       <section>
-        <h2 className="mb-4 font-mono text-sm font-bold uppercase tracking-wide text-muted">
-          Community top games
-        </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-mono text-sm font-bold uppercase tracking-wide text-muted">
+            Community top games
+          </h2>
+          <Link href="/games" className="text-sm text-accent hover:underline">
+            View all
+          </Link>
+        </div>
         {topGames.length === 0 ? (
           <p className="rounded-md border border-dashed border-edge p-10 text-center text-sm text-muted">
             No rankings yet. The community chart appears once players save

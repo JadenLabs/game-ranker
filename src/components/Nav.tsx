@@ -25,6 +25,12 @@ export default async function Nav() {
         >
           Players
         </Link>
+        <Link
+          href="/games"
+          className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
+        >
+          Games
+        </Link>
         {session && (
           <Link
             href="/rank"
