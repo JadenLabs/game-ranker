@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Game Ranker
 
-## Getting Started
+Rank your top 10 favorite games, share your list, and compare your taste with other players.
 
-First, run the development server:
+Built with Next.js (App Router), Better Auth, Postgres (Neon), dnd-kit, and the IGDB API. Deploys to Vercel.
+
+## Features
+
+- Sign in with email and password, Google, or Discord
+- Search any game via IGDB and build a ranked top 10 with drag and drop
+- Public profile page for every player at `/u/username`
+- Side-by-side comparison of two lists with a taste match score
+- Community chart: aggregate top games across all lists (#1 pick = 10 points, #10 = 1 point)
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in values, see below
+npm run db:migrate           # creates app tables and Better Auth tables
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app needs `DATABASE_URL` and `BETTER_AUTH_SECRET`. Email/password auth is always available; the Google/Discord buttons and game search light up once their keys are added.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Postgres** ([neon.tech](https://neon.tech), free tier)
+   - Create a project, copy the pooled connection string (host contains `-pooler`) as `DATABASE_URL`
+   - Tip: create a second Neon branch for local dev so it stays separate from production data
+2. **Google OAuth** ([console.cloud.google.com](https://console.cloud.google.com))
+   - Create a project and configure the OAuth consent screen (External, Testing mode is fine, add your email as a test user)
+   - Credentials > Create credentials > OAuth client ID > Web application
+   - Authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+3. **Discord OAuth** ([discord.com/developers/applications](https://discord.com/developers/applications))
+   - New Application > OAuth2
+   - Add redirect: `http://localhost:3000/api/auth/callback/discord`
+4. **IGDB via Twitch** ([dev.twitch.tv/console](https://dev.twitch.tv/console), requires a Twitch account with 2FA)
+   - Register an application (category: Application Integration, OAuth redirect can be `http://localhost`)
+   - Use its client ID and secret as `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`
 
-## Learn More
+## Deploying to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+Production domain: `ranker.jadenlabs.me`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push the repo to GitHub and import it at [vercel.com/new](https://vercel.com/new), then add the custom domain in the Vercel project settings
+2. Set the environment variables from `.env.example` in the Vercel project settings, with one change:
+   - `BETTER_AUTH_URL` = `https://ranker.jadenlabs.me`
+3. Run the migration once against the production database: `npm run db:migrate` (already done if local `.env.local` points at the same Neon database)
+4. Add the production redirect URIs in the provider consoles:
+   - Google: `https://ranker.jadenlabs.me/api/auth/callback/google`
+   - Discord: `https://ranker.jadenlabs.me/api/auth/callback/discord`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Postgres schema: Better Auth manages the `user`, `session`, `account`, and `verification` tables; the app adds `game` (cached IGDB metadata) and `ranking` (user_id, game_id, position 1 to 10). Both are created by `npm run db:migrate` (see `scripts/init-db.mjs`).
