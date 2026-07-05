@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { pool } from "@/lib/db";
 import { getGamesByIds, igdbConfigured } from "@/lib/igdb";
+import { MAX_RANKING_SIZE } from "@/lib/ranking-constants";
 
 export type SaveResult = { ok: true } | { ok: false; error: string };
 
@@ -15,8 +16,11 @@ export async function saveRanking(gameIds: number[]): Promise<SaveResult> {
   if (!session) {
     return { ok: false, error: "Sign in required" };
   }
-  if (!Array.isArray(gameIds) || gameIds.length > 10) {
-    return { ok: false, error: "A ranking can hold at most 10 games" };
+  if (!Array.isArray(gameIds) || gameIds.length > MAX_RANKING_SIZE) {
+    return {
+      ok: false,
+      error: `A ranking can hold at most ${MAX_RANKING_SIZE} games`,
+    };
   }
   if (!gameIds.every((id) => Number.isInteger(id) && id > 0)) {
     return { ok: false, error: "Invalid game data" };

@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { pool } from "./db";
+import { SCORED_POSITIONS } from "./ranking-constants";
 
 export type RankedGame = {
   position: number;
@@ -36,7 +38,11 @@ export type CommunityGame = {
   listCount: number;
 };
 
-export async function getRankingForUser(userId: string): Promise<RankedGame[]> {
+// Cached per request: profile pages read these from generateMetadata
+// and the page component in the same render.
+export const getRankingForUser = cache(async function getRankingForUser(
+  userId: string
+): Promise<RankedGame[]> {
   const { rows } = await pool.query(
     `SELECT r.position, g.id AS "gameId", g.name,
             g.cover_image_id AS "coverImageId", g.release_year AS "releaseYear"
@@ -45,9 +51,9 @@ export async function getRankingForUser(userId: string): Promise<RankedGame[]> {
     [userId]
   );
   return rows as RankedGame[];
-}
+});
 
-export async function getUserByUsername(
+export const getUserByUsername = cache(async function getUserByUsername(
   username: string
 ): Promise<PublicUser | undefined> {
   const { rows } = await pool.query(
@@ -56,7 +62,7 @@ export async function getUserByUsername(
     [username.toLowerCase()]
   );
   return rows[0] as PublicUser | undefined;
-}
+});
 
 export async function listUsers(): Promise<UserListItem[]> {
   const { rows } = await pool.query(
@@ -68,18 +74,19 @@ export async function listUsers(): Promise<UserListItem[]> {
                    ORDER BY r.position),
           '[]')
           FROM ranking r JOIN game g ON g.id = r.game_id
-          WHERE r.user_id = u.id) AS games
+          WHERE r.user_id = u.id AND r.position <= ${SCORED_POSITIONS}) AS games
      FROM "user" u
      ORDER BY u."createdAt" DESC`
   );
   return rows as UserListItem[];
 }
 
-// Without a limit, returns every game that appears in at least one ranking
+// Without a limit, returns every game that appears in at least one ranking.
+// Positions past SCORED_POSITIONS keep a game on lists but earn no points.
 export async function getCommunityTop(limit?: number): Promise<CommunityGame[]> {
   const sql = `SELECT g.id, g.name, g.cover_image_id AS "coverImageId",
             g.release_year AS "releaseYear",
-            SUM(11 - r.position)::int AS points,
+            SUM(GREATEST(${SCORED_POSITIONS + 1} - r.position, 0))::int AS points,
             COUNT(*)::int AS "listCount"
      FROM ranking r JOIN game g ON g.id = r.game_id
      GROUP BY g.id
@@ -128,7 +135,10 @@ export function compareRankings(a: RankedGame[], b: RankedGame[]): Comparison {
       (sum, g) => sum + Math.abs(g.position - (bByGame.get(g.gameId) ?? 0)),
       0
     ) / shared.length;
-  const orderScore = 1 - avgDistance / 9;
+  // The largest possible rank gap between two shared games spans the
+  // longer of the two lists.
+  const maxDistance = Math.max(a.length, b.length) - 1;
+  const orderScore = maxDistance > 0 ? 1 - avgDistance / maxDistance : 1;
   const similarity = Math.round(overlap * (0.7 + 0.3 * orderScore) * 100);
   return { sharedGameIds, sharedCount: shared.length, similarity };
 }

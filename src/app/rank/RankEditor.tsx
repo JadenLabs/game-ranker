@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { MAX_RANKING_SIZE, SCORED_POSITIONS } from "@/lib/ranking-constants";
 import { saveRanking } from "./actions";
 
 export type RankEntry = {
@@ -82,7 +83,11 @@ function SortableRow({
           <circle cx="11" cy="13" r="1.5" />
         </svg>
       </button>
-      <span className="w-7 text-center font-mono text-sm font-bold text-accent">
+      <span
+        className={`w-7 text-center font-mono text-sm font-bold ${
+          index < SCORED_POSITIONS ? "text-accent" : "text-muted"
+        }`}
+      >
         {index + 1}
       </span>
       {thumb ? (
@@ -184,7 +189,8 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
   }, []);
 
   function addGame(game: SearchResult) {
-    if (entries.length >= 10 || entries.some((e) => e.id === game.id)) return;
+    if (entries.length >= MAX_RANKING_SIZE || entries.some((e) => e.id === game.id))
+      return;
     setEntries([...entries, game]);
     handleQueryChange("");
     markDirty();
@@ -228,11 +234,11 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
           placeholder={
-            entries.length >= 10
+            entries.length >= MAX_RANKING_SIZE
               ? "Your list is full. Remove a game to add another."
               : "Search for a game..."
           }
-          disabled={entries.length >= 10}
+          disabled={entries.length >= MAX_RANKING_SIZE}
           className="w-full rounded-md border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-accent disabled:opacity-50"
         />
         <div className="mt-2">
@@ -244,7 +250,7 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
           <ul className="divide-y divide-edge overflow-hidden rounded-md border border-edge empty:hidden">
             {results.map((game) => {
               const added = entries.some((e) => e.id === game.id);
-              const full = entries.length >= 10;
+              const full = entries.length >= MAX_RANKING_SIZE;
               const thumb = coverThumb(game.coverImageId);
               return (
                 <li key={game.id}>
@@ -286,10 +292,19 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-mono text-sm font-bold uppercase tracking-wide text-muted">
-            Your top 10
+            Your ranking
           </h2>
-          <span className="font-mono text-sm text-muted">{entries.length}/10</span>
+          <span className="font-mono text-sm text-muted">
+            {entries.length}/{MAX_RANKING_SIZE}
+          </span>
         </div>
+        {entries.length > SCORED_POSITIONS && (
+          <p className="mb-3 text-xs text-muted">
+            Only your top {SCORED_POSITIONS} earn points for the community
+            chart. Games ranked {SCORED_POSITIONS + 1}-{MAX_RANKING_SIZE} stay
+            on your list but score nothing.
+          </p>
+        )}
         {entries.length === 0 ? (
           <p className="rounded-md border border-dashed border-edge p-6 text-center text-sm text-muted">
             Use the search to add games, then drag to reorder.

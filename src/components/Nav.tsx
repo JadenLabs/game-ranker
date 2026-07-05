@@ -36,7 +36,7 @@ export default async function Nav() {
             href="/rank"
             className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
           >
-            My Top 10
+            My List
           </Link>
         )}
         <div className="ml-auto flex min-w-0 items-center gap-3 sm:gap-4">

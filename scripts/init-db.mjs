@@ -32,10 +32,14 @@ await pool.query(`
   CREATE TABLE IF NOT EXISTS ranking (
     user_id TEXT NOT NULL,
     game_id INTEGER NOT NULL REFERENCES game(id),
-    position INTEGER NOT NULL CHECK (position BETWEEN 1 AND 10),
+    position INTEGER NOT NULL CHECK (position BETWEEN 1 AND 20),
     PRIMARY KEY (user_id, position),
     UNIQUE (user_id, game_id)
   );
+  -- Databases created before extended rankings capped position at 10.
+  ALTER TABLE ranking DROP CONSTRAINT IF EXISTS ranking_position_check;
+  ALTER TABLE ranking ADD CONSTRAINT ranking_position_check
+    CHECK (position BETWEEN 1 AND 20);
   CREATE TABLE IF NOT EXISTS ranking_like (
     user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     liked_user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,

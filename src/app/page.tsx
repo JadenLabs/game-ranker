@@ -18,7 +18,7 @@ export default async function HomePage() {
     <div className="space-y-12">
       <section className="pt-8 text-center">
         <h1 className="font-mono text-3xl font-bold sm:text-4xl">
-          Rank your top 10 <span className="text-accent">favorite games</span>
+          Rank your <span className="text-accent">favorite games</span>
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-muted">
           Build your list, share your page, and see how your taste matches up
@@ -30,7 +30,7 @@ export default async function HomePage() {
               href="/rank"
               className="rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
-              Edit my top 10
+              Edit my list
             </Link>
           ) : (
             <>

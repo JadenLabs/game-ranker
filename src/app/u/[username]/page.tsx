@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
@@ -5,6 +6,38 @@ import { auth } from "@/lib/auth";
 import { getLikeInfo, getRankingForUser, getUserByUsername } from "@/lib/rankings";
 import GameCover from "@/components/GameCover";
 import LikeButton from "@/components/LikeButton";
+import ShareButton from "@/components/ShareButton";
+
+// Open Graph tags so shared profile links unfurl into rich embeds on
+// Discord and other platforms. The image itself comes from the
+// colocated opengraph-image route.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+  const { username } = await params;
+  const user = await getUserByUsername(decodeURIComponent(username));
+  if (!user) return { title: "Player not found | Game Ranker" };
+
+  const ranking = await getRankingForUser(user.id);
+  const displayName = user.displayUsername ?? user.username ?? user.name;
+  const title = `@${displayName} | Game Ranker`;
+  const topNames = ranking.slice(0, 3).map((g) => g.name);
+  const description =
+    ranking.length > 0
+      ? `${displayName}'s top ${ranking.length} games, starting with ${topNames.join(
+          ", "
+        )}${ranking.length > 3 ? " and more" : ""}.`
+      : `@${displayName} has not ranked any games yet.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "profile" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function ProfilePage({
   params,
@@ -40,6 +73,9 @@ export default async function ProfilePage({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {user.username && (
+            <ShareButton path={`/u/${encodeURIComponent(user.username)}`} />
+          )}
           <LikeButton
             likedUserId={user.id}
             initialCount={likeInfo.count}
@@ -74,7 +110,7 @@ export default async function ProfilePage({
             <>
               {" "}
               <Link href="/rank" className="text-accent hover:underline">
-                Build your top 10
+                Build your list
               </Link>
             </>
           )}
