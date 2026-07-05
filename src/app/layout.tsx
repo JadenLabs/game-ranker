@@ -15,8 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Absolute URLs for Open Graph images and share links resolve against
+  // the deployment's public origin.
+  metadataBase: process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL)
+    : undefined,
   title: "Game Ranker",
-  description: "Rank your top 10 favorite games and compare with friends",
+  description: "Rank your favorite games and compare with friends",
 };
 
 export default function RootLayout({

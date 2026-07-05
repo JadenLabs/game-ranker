@@ -6,7 +6,7 @@ import { getRankingForUser } from "@/lib/rankings";
 import RankEditor from "./RankEditor";
 import DeleteAccountButton from "@/components/DeleteAccountButton";
 
-export const metadata = { title: "My Top 10 | Game Ranker" };
+export const metadata = { title: "My List | Game Ranker" };
 
 export default async function RankPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -24,7 +24,7 @@ export default async function RankPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-mono text-xl font-bold">My Top 10</h1>
+        <h1 className="font-mono text-xl font-bold">My List</h1>
         {username && (
           <Link
             href={`/u/${username}`}

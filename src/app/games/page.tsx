@@ -13,14 +13,15 @@ export default async function GamesPage() {
         <h1 className="font-mono text-xl font-bold">Games</h1>
         <p className="mt-1 text-sm text-muted">
           Every game ranked by the community, ordered by points. A #1 pick is
-          worth 10 points, a #10 pick is worth 1.
+          worth 10 points, a #10 pick is worth 1, and picks ranked 11-20 earn
+          no points.
         </p>
       </div>
       {games.length === 0 ? (
         <p className="rounded-md border border-dashed border-edge p-10 text-center text-sm text-muted">
           No games have been ranked yet. Be the first to{" "}
           <Link href="/rank" className="text-accent hover:underline">
-            build your top 10
+            build your list
           </Link>
           .
         </p>
