@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { pool } from "@/lib/db";
+import { ensureRankingConstraint, pool } from "@/lib/db";
 import { getGamesByIds, igdbConfigured } from "@/lib/igdb";
 import { MAX_RANKING_SIZE } from "@/lib/ranking-constants";
 
@@ -42,6 +42,13 @@ export async function saveRanking(gameIds: number[]): Promise<SaveResult> {
   const byId = new Map(games.map((g) => [g.id, g]));
   if (gameIds.some((id) => !byId.has(id))) {
     return { ok: false, error: "One of the games could not be found on IGDB" };
+  }
+
+  try {
+    await ensureRankingConstraint();
+  } catch (err) {
+    console.error("Failed to widen ranking position constraint:", err);
+    return { ok: false, error: "Could not save your ranking. Try again." };
   }
 
   const client = await pool.connect();
