@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getRankingForUser } from "@/lib/rankings";
 import RankEditor from "./RankEditor";
+import DeleteAccountButton from "@/components/DeleteAccountButton";
 
 export const metadata = { title: "My Top 10 | Game Ranker" };
 
@@ -34,6 +35,9 @@ export default async function RankPage() {
         )}
       </div>
       <RankEditor initial={initial} />
+      <div className="mt-16 border-t border-edge pt-6">
+        <DeleteAccountButton />
+      </div>
     </div>
   );
 }

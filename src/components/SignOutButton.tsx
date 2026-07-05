@@ -13,7 +13,7 @@ export default function SignOutButton() {
         router.push("/");
         router.refresh();
       }}
-      className="cursor-pointer text-sm text-muted transition-colors hover:text-foreground"
+      className="cursor-pointer whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
     >
       Sign out
     </button>

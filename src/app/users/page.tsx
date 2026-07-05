@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listUsers } from "@/lib/rankings";
-import GameCover from "@/components/GameCover";
+import CoverCollage from "@/components/CoverCollage";
 
 export const metadata = { title: "Players | Game Ranker" };
 
@@ -27,17 +27,7 @@ export default async function UsersPage() {
                 className="block overflow-hidden rounded-lg border border-edge bg-surface transition-colors hover:border-muted"
               >
                 <div className="relative aspect-[3/4]">
-                  {user.topGameName ? (
-                    <GameCover
-                      imageId={user.topCoverImageId}
-                      name={user.topGameName}
-                      sizes="(max-width: 640px) 50vw, 180px"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-surface-hover font-mono text-2xl text-muted">
-                      ?
-                    </div>
-                  )}
+                  <CoverCollage games={user.games} />
                 </div>
                 <div className="px-3 py-2">
                   <p className="truncate font-mono text-sm font-medium">

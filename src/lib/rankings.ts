@@ -16,10 +16,14 @@ export type PublicUser = {
   image: string | null;
 };
 
+export type CollageGame = {
+  name: string;
+  coverImageId: string | null;
+};
+
 export type UserListItem = PublicUser & {
   gameCount: number;
-  topGameName: string | null;
-  topCoverImageId: string | null;
+  games: CollageGame[];
 };
 
 export type CommunityGame = {
@@ -57,10 +61,12 @@ export async function listUsers(): Promise<UserListItem[]> {
   const { rows } = await pool.query(
     `SELECT u.id, u.name, u.username, u."displayUsername", u.image,
        (SELECT COUNT(*) FROM ranking r WHERE r.user_id = u.id)::int AS "gameCount",
-       (SELECT g.name FROM ranking r JOIN game g ON g.id = r.game_id
-          WHERE r.user_id = u.id AND r.position = 1) AS "topGameName",
-       (SELECT g.cover_image_id FROM ranking r JOIN game g ON g.id = r.game_id
-          WHERE r.user_id = u.id AND r.position = 1) AS "topCoverImageId"
+       (SELECT COALESCE(
+          json_agg(json_build_object('name', g.name, 'coverImageId', g.cover_image_id)
+                   ORDER BY r.position),
+          '[]')
+          FROM ranking r JOIN game g ON g.id = r.game_id
+          WHERE r.user_id = u.id) AS games
      FROM "user" u
      ORDER BY u."createdAt" DESC`
   );

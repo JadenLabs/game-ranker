@@ -18,7 +18,14 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { saveRanking, type RankEntry } from "./actions";
+import { saveRanking } from "./actions";
+
+export type RankEntry = {
+  id: number;
+  name: string;
+  coverImageId: string | null;
+  releaseYear: number | null;
+};
 
 type SearchResult = RankEntry;
 
@@ -201,7 +208,7 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
 
   async function save() {
     setSaveState({ kind: "saving" });
-    const result = await saveRanking(entries);
+    const result = await saveRanking(entries.map((e) => e.id));
     if (result.ok) {
       setDirty(false);
       setSaveState({ kind: "saved" });
@@ -285,7 +292,7 @@ export default function RankEditor({ initial }: { initial: RankEntry[] }) {
         </div>
         {entries.length === 0 ? (
           <p className="rounded-md border border-dashed border-edge p-6 text-center text-sm text-muted">
-            Search for games on the left and add them here. Drag to reorder.
+            Use the search to add games, then drag to reorder.
           </p>
         ) : (
           <DndContext

@@ -67,6 +67,36 @@ export async function searchGames(query: string): Promise<GameSearchResult[]> {
   }));
 }
 
+// Authoritative lookup used when saving rankings, so clients can only
+// reference IGDB games by id and never write their own names or covers.
+export async function getGamesByIds(ids: number[]): Promise<GameSearchResult[]> {
+  if (ids.length === 0) return [];
+  const token = await getAccessToken();
+  const res = await fetch("https://api.igdb.com/v4/games", {
+    method: "POST",
+    headers: {
+      "Client-ID": process.env.TWITCH_CLIENT_ID!,
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: `fields name, cover.image_id, first_release_date; where id = (${ids
+      .map((id) => Math.trunc(id))
+      .join(",")}); limit ${ids.length};`,
+  });
+  if (!res.ok) {
+    throw new Error(`IGDB lookup failed with status ${res.status}`);
+  }
+  const games = (await res.json()) as IgdbGame[];
+  return games.map((g) => ({
+    id: g.id,
+    name: g.name,
+    coverImageId: g.cover?.image_id ?? null,
+    releaseYear: g.first_release_date
+      ? new Date(g.first_release_date * 1000).getUTCFullYear()
+      : null,
+  }));
+}
+
 export function coverUrl(
   imageId: string,
   size: "cover_big" | "cover_small" = "cover_big"

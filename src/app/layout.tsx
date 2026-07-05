@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import "./globals.css";
 
@@ -34,7 +35,15 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="border-t border-edge py-6 text-center text-xs text-muted">
-          Game Ranker. Game data from IGDB.
+          <p>Game Ranker. Game data from IGDB.</p>
+          <p className="mt-2 space-x-4">
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms of Service
+            </Link>
+          </p>
         </footer>
       </body>
     </html>

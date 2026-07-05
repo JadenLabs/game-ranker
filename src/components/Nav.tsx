@@ -10,31 +10,36 @@ export default async function Nav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-edge bg-background/90 backdrop-blur">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-5 px-4">
-        <Link href="/" className="font-mono text-sm font-bold tracking-tight">
-          <span className="text-accent">#</span>gameranker
+      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-3 sm:gap-5 sm:px-4">
+        <Link
+          href="/"
+          className="whitespace-nowrap font-mono text-sm font-bold tracking-tight"
+        >
+          <span className="text-accent">#</span>
+          <span className="hidden sm:inline">gameranker</span>
+          <span className="sm:hidden">gr</span>
         </Link>
         <Link
           href="/users"
-          className="text-sm text-muted transition-colors hover:text-foreground"
+          className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
         >
           Players
         </Link>
         {session && (
           <Link
             href="/rank"
-            className="text-sm text-muted transition-colors hover:text-foreground"
+            className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
           >
             My Top 10
           </Link>
         )}
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex min-w-0 items-center gap-3 sm:gap-4">
           {session ? (
             <>
               {username && (
                 <Link
                   href={`/u/${username}`}
-                  className="font-mono text-sm text-muted transition-colors hover:text-foreground"
+                  className="truncate font-mono text-sm text-muted transition-colors hover:text-foreground"
                 >
                   @{username}
                 </Link>
@@ -45,15 +50,16 @@ export default async function Nav() {
             <>
               <Link
                 href="/login"
-                className="text-sm text-muted transition-colors hover:text-foreground"
+                className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                className="whitespace-nowrap rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
               >
-                Create account
+                <span className="hidden sm:inline">Create account</span>
+                <span className="sm:hidden">Sign up</span>
               </Link>
             </>
           )}

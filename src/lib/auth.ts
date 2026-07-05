@@ -45,6 +45,22 @@ export const auth = betterAuth({
   database: pool,
   emailAndPassword: { enabled: true },
   socialProviders,
+  user: {
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        await pool.query(`DELETE FROM ranking WHERE user_id = $1`, [user.id]);
+      },
+    },
+  },
+  trustedOrigins:
+    process.env.NODE_ENV === "development" ? ["http://localhost:3000"] : [],
+  // Store rate limit counters in Postgres so they survive serverless
+  // cold starts and apply across all Vercel instances
+  rateLimit: {
+    enabled: true,
+    storage: "database",
+  },
   plugins: [username(), nextCookies()],
   databaseHooks: {
     user: {
